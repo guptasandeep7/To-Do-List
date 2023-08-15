@@ -9,7 +9,7 @@ class TaskRepository(private val taskDao: TaskDao) {
 
     suspend fun addTask(dataItem: DataItem) = taskDao.addTask(dataItem)
 
-    suspend fun updateTask(dataItem: DataItem, b: Boolean) = taskDao.updateTask(dataItem.item,b)
+    suspend fun updateTask(id:Int,b:Boolean) = taskDao.updateTask(id,b)
 
     suspend fun deleteTask(dataItem: DataItem) = taskDao.deleteTask(dataItem)
 }

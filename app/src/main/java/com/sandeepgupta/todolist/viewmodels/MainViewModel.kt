@@ -22,12 +22,11 @@ class MainViewModel(application: Application) : ViewModel() {
     }
 
     fun addItem(text: String) = viewModelScope.launch {
-        repository.addTask(DataItem(text, false))
+        repository.addTask(DataItem(0,text, false))
     }
 
-
-    fun updateItem(dataItem: DataItem, b: Boolean) = viewModelScope.launch {
-        repository.updateTask(dataItem,b)
+    fun updateItem(id:Int, b: Boolean) = viewModelScope.launch {
+        repository.updateTask(id,b)
     }
 
     fun deleteItem(dataItem: DataItem) = viewModelScope.launch {

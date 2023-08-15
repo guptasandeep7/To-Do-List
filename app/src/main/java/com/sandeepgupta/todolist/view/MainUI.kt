@@ -2,7 +2,6 @@ package com.sandeepgupta.todolist.view
 
 import android.app.Application
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -56,11 +56,11 @@ fun MainUI(mainViewModel: MainViewModel) {
             .fillMaxSize()
     ) {
         TopAppBar(title = {
-            Row(
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text(text = stringResource(id = R.string.app_name))
-            }
+            Text(
+                text = stringResource(id = R.string.app_name),
+                textAlign = TextAlign.Center
+            )
+
         })
         Column(
             modifier = Modifier
@@ -75,7 +75,7 @@ fun MainUI(mainViewModel: MainViewModel) {
                 val list = itemList.value.filter {
                     !it.isChecked
                 }
-                items(items = list, key = { it.item }) { item ->
+                items(items = list, key = { it.id }) { item ->
                     ItemUI(
                         item = item,
                         mainViewModel = mainViewModel,
@@ -95,7 +95,7 @@ fun MainUI(mainViewModel: MainViewModel) {
                 val list2 = itemList.value.filter {
                     it.isChecked
                 }
-                items(items = list2, key = { it.item }) { item ->
+                items(items = list2, key = { it.id }) { item ->
                     ItemUI(
                         item = item,
                         mainViewModel = mainViewModel,
@@ -127,7 +127,7 @@ fun ItemUI(item: DataItem, mainViewModel: MainViewModel, modifier: Modifier) {
                 .toggleable(
                     value = item.isChecked
                 ) {
-                    mainViewModel.updateItem(item, it)
+                    mainViewModel.updateItem(item.id, it)
                 }
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
