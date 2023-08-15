@@ -1,6 +1,7 @@
 package com.sandeepgupta.todolist.view
 
 import android.app.Application
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
@@ -43,8 +45,7 @@ import com.sandeepgupta.todolist.models.DataItem
 import com.sandeepgupta.todolist.ui.theme.ToDoListTheme
 import com.sandeepgupta.todolist.viewmodels.MainViewModel
 
-
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun MainUI(mainViewModel: MainViewModel) {
 
@@ -63,48 +64,61 @@ fun MainUI(mainViewModel: MainViewModel) {
         })
         Column(
             modifier = Modifier
-                .weight(1f)
+                .fillMaxSize()
                 .padding(16.dp)
         ) {
 
-            LazyColumn {
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+            ) {
                 val list = itemList.value.filter {
                     !it.isChecked
                 }
-                items(items = list) { item ->
-                    ItemUI(item = item, mainViewModel = mainViewModel)
+                items(items = list, key = { it.item }) { item ->
+                    ItemUI(
+                        item = item,
+                        mainViewModel = mainViewModel,
+                        Modifier.animateItemPlacement()
+                    )
                 }
 
-            }
+                item(1) {
+                    Divider(
+                        modifier = Modifier
+                            .padding(vertical = 8.dp),
+                        thickness = 2.dp,
+                        color = Color.Gray
+                    )
+                }
 
-            Divider(
-                thickness = 1.dp
-            )
-            LazyColumn {
                 val list2 = itemList.value.filter {
                     it.isChecked
                 }
-                items(items = list2) { item ->
-                    ItemUI(item = item, mainViewModel = mainViewModel)
+                items(items = list2, key = { it.item }) { item ->
+                    ItemUI(
+                        item = item,
+                        mainViewModel = mainViewModel,
+                        Modifier.animateItemPlacement()
+                    )
                 }
             }
 
+            Box(
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                AddTextField(mainViewModel)
+            }
         }
 
-        Box(
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            AddTextField(mainViewModel)
-        }
     }
-
-
 }
 
 @Composable
-fun ItemUI(item: DataItem, mainViewModel: MainViewModel) {
+fun ItemUI(item: DataItem, mainViewModel: MainViewModel, modifier: Modifier) {
     Row(
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
     ) {
         Row(
             modifier = Modifier
@@ -160,7 +174,7 @@ fun AddTextField(mainViewModel: MainViewModel) {
 
     Row(
         Modifier
-            .padding(16.dp)
+            .padding(vertical = 16.dp, horizontal = 8.dp)
     ) {
         TextField(
             modifier = Modifier
@@ -180,7 +194,7 @@ fun AddTextField(mainViewModel: MainViewModel) {
         Button(
             onClick = { addItem() },
             modifier = Modifier
-                .padding(8.dp, 0.dp)
+                .padding(horizontal = 4.dp)
         ) {
             Text(text = "Add")
 
