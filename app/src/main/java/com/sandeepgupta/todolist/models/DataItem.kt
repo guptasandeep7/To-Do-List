@@ -7,14 +7,13 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "ToDoList")
 data class DataItem(
-
-    @PrimaryKey(autoGenerate = true)
-    val id: Int,
-
-    @ColumnInfo(name = "item")
+        @ColumnInfo(name = "item")
     val item: String,
 
     @ColumnInfo(name = "isChecked")
     var isChecked: Boolean
-)
+){
+    @PrimaryKey(autoGenerate = true)
+    var id: Int = 0
+}
 

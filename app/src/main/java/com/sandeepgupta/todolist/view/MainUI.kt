@@ -83,7 +83,7 @@ fun MainUI(mainViewModel: MainViewModel) {
                     )
                 }
 
-                item(1) {
+                item {
                     Divider(
                         modifier = Modifier
                             .padding(vertical = 8.dp),

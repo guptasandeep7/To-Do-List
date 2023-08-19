@@ -22,7 +22,7 @@ class MainViewModel(application: Application) : ViewModel() {
     }
 
     fun addItem(text: String) = viewModelScope.launch {
-        repository.addTask(DataItem(0,text, false))
+        repository.addTask(DataItem(text, false))
     }
 
     fun updateItem(id:Int, b: Boolean) = viewModelScope.launch {
