@@ -1,215 +1,197 @@
 package com.sandeepgupta.todolist.view
 
-import android.app.Application
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Divider
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
-import com.sandeepgupta.todolist.R
-import com.sandeepgupta.todolist.models.DataItem
-import com.sandeepgupta.todolist.ui.theme.ToDoListTheme
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.sandeepgupta.todolist.ui.components.AddNotesScreen
+import com.sandeepgupta.todolist.ui.components.AddTextField
+import com.sandeepgupta.todolist.ui.components.NotesScreen
+import com.sandeepgupta.todolist.ui.components.TodoScreen
 import com.sandeepgupta.todolist.viewmodels.MainViewModel
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+
+@OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
+    ExperimentalComposeUiApi::class
+)
 @Composable
-fun MainUI(mainViewModel: MainViewModel) {
+fun MainUI(mainViewModel: MainViewModel, navController: NavHostController) {
 
-    val itemList = mainViewModel.allTaskList.observeAsState(initial = emptyList())
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val state = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
+    val scope = rememberCoroutineScope()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        TopAppBar(title = {
-            Text(
-                text = stringResource(id = R.string.app_name),
-                textAlign = TextAlign.Center
-            )
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
 
-        })
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-
-            LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-            ) {
-                val list = itemList.value.filter {
-                    !it.isChecked
-                }
-                items(items = list, key = { it.id }) { item ->
-                    ItemUI(
-                        item = item,
-                        mainViewModel = mainViewModel,
-                        Modifier.animateItemPlacement()
-                    )
-                }
-
-                item {
-                    Divider(
-                        modifier = Modifier
-                            .padding(vertical = 8.dp),
-                        thickness = 2.dp,
-                        color = Color.Gray
-                    )
-                }
-
-                val list2 = itemList.value.filter {
-                    it.isChecked
-                }
-                items(items = list2, key = { it.id }) { item ->
-                    ItemUI(
-                        item = item,
-                        mainViewModel = mainViewModel,
-                        Modifier.animateItemPlacement()
-                    )
-                }
-            }
-
-            Box(
-                contentAlignment = Alignment.BottomCenter
-            ) {
-                AddTextField(mainViewModel)
-            }
-        }
-
+    LaunchedEffect(state.currentValue) {
+        if (state.currentValue == ModalBottomSheetValue.Hidden) {
+            keyboardController?.hide()
+        } else keyboardController?.show()
     }
-}
 
-@Composable
-fun ItemUI(item: DataItem, mainViewModel: MainViewModel, modifier: Modifier) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
+    ModalBottomSheetLayout(
+        sheetState = state,
+        sheetContent = {
+            AddTextField(mainViewModel = mainViewModel)
+        },
+        sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+        scrimColor = Color.Black.copy(alpha = 0.5f)
     ) {
-        Row(
-            modifier = Modifier
-                .weight(1f)
-                .height(56.dp)
-                .toggleable(
-                    value = item.isChecked
+        Scaffold(
+            topBar = {
+                TopAppBar(title = {
+                    Text(
+                        text = when (currentRoute) {
+                            Destinations.Todo.route -> "Todo List"
+                            Destinations.Notes.route -> "Notes"
+                            Destinations.AddNotesScreen.route -> "Add Notes"
+                            else -> "Todo List"
+                        }
+                    )
+                })
+            },
+            floatingActionButton = {
+                if (currentRoute != Destinations.AddNotesScreen.route)
+                    FloatingActionButton(onClick = {
+                        when (currentRoute) {
+                            Destinations.Todo.route -> {
+                                scope.launch {
+                                    state.show()
+                                    keyboardController?.show()
+                                }
+                            }
+
+                            Destinations.Notes.route -> {
+                                navController.navigate(Destinations.AddNotesScreen.route)
+                            }
+                        }
+                    }) {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
+                    }
+            },
+            bottomBar = { BottomBar(navController = navController, currentRoute = currentRoute) },
+            content = {
+                Box(
+                    modifier = Modifier.padding(it)
                 ) {
-                    mainViewModel.updateItem(item.id, it)
+                    NavigationGraph(navController = navController, mainViewModel)
                 }
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Checkbox(
-                checked = item.isChecked,
-                onCheckedChange = null
-            )
-            if (item.isChecked)
-                Text(
-                    text = item.item,
-                    style = MaterialTheme.typography.bodyLarge,
-                    textDecoration = TextDecoration.LineThrough,
-                    modifier = Modifier.padding(start = 16.dp)
-                )
-            else
-                Text(
-                    text = item.item,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(start = 16.dp)
-                )
-        }
-        IconButton(onClick = { mainViewModel.deleteItem(item) }) {
-            Icon(
-                Icons.Default.Delete,
-                contentDescription = "Delete",
-                modifier = Modifier.padding(8.dp)
-            )
-        }
 
-    }
-}
-
-@Composable
-fun AddTextField(mainViewModel: MainViewModel) {
-    var text by remember {
-        mutableStateOf("")
-    }
-
-    fun addItem() {
-        mainViewModel.addItem(text)
-        text = ""
-    }
-
-    Row(
-        Modifier
-            .padding(vertical = 16.dp, horizontal = 8.dp)
-    ) {
-        TextField(
-            modifier = Modifier
-                .weight(1f),
-            value = text,
-            onValueChange = { text = it },
-            placeholder = { Text(text = "Enter the text") },
-            maxLines = 1,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    addItem()
-                }
-            )
+            }
         )
-
-        Button(
-            onClick = { addItem() },
-            modifier = Modifier
-                .padding(horizontal = 4.dp)
-        ) {
-            Text(text = "Add")
-
-        }
-
     }
-
 }
 
-@Preview
+
 @Composable
-fun GreetingPreview() {
-    ToDoListTheme {
-        val application = Application()
-        val mainViewModel = MainViewModel(application)
-        MainUI(mainViewModel)
+fun NavigationGraph(navController: NavHostController, mainViewModel: MainViewModel) {
+    NavHost(navController,
+        Destinations.Todo.route,
+        enterTransition = { EnterTransition.None },
+        exitTransition = { ExitTransition.None }
+    ) {
+        composable(
+            Destinations.Todo.route,
+            enterTransition = {
+                slideInHorizontally() + fadeIn()
+            },
+            exitTransition = {
+                slideOutHorizontally() + fadeOut()
+            }
+        ) {
+            TodoScreen(mainViewModel = mainViewModel)
+        }
+        composable(Destinations.Notes.route,
+            enterTransition = {
+                fadeIn() + slideInHorizontally(
+                    initialOffsetX = { it }
+                )
+            },
+            exitTransition = {
+                fadeOut() + slideOutHorizontally(
+                    targetOffsetX = { it }
+                )
+            }) {
+            NotesScreen()
+        }
+        composable(Destinations.AddNotesScreen.route) {
+            AddNotesScreen()
+        }
+    }
+
+}
+
+
+@Composable
+fun BottomBar(
+    navController: NavHostController,
+    currentRoute: String?
+) {
+
+    NavigationBar {
+
+        screens.forEach { screen ->
+
+            NavigationBarItem(
+                label = {
+                    Text(text = screen.title!!)
+                },
+                icon = {
+                    Icon(imageVector = screen.icon!!, contentDescription = screen.title)
+                },
+                selected = currentRoute == screen.route,
+                onClick = {
+                    navController.navigate(screen.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedTextColor = MaterialTheme.colorScheme.primary
+                ),
+            )
+        }
     }
 }
+

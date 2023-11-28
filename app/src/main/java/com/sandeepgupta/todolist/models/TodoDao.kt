@@ -6,17 +6,16 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 
-const val TABLE_NAME = "ToDoList"
 
 @Dao
-interface TaskDao {
+interface TodoDao {
     @Insert
     suspend fun addTask(dataItem: DataItem)
 
-    @Query("SELECT * FROM $TABLE_NAME")
+    @Query("SELECT * FROM $TODO_TABLE_NAME")
     fun getAllTask(): LiveData<List<DataItem>>
 
-    @Query("UPDATE $TABLE_NAME set isChecked=:b where id=:id")
+    @Query("UPDATE $TODO_TABLE_NAME set isChecked=:b where id=:id")
     suspend fun updateTask(id: Int, b: Boolean)
 
     @Delete

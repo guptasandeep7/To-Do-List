@@ -1,36 +1,13 @@
 package com.sandeepgupta.todolist.models
 
-import android.content.Context
 import androidx.room.Database
-import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [(DataItem::class)], version = 3, exportSchema = false)
-abstract class TaskRoomDatabase: RoomDatabase() {
+const val DATABASE_NAME = "task_database"
 
-    abstract fun taskDao():TaskDao
+@Database(entities = [(DataItem::class), (NotesItem::class)], version = 4, exportSchema = false)
+abstract class TaskRoomDatabase : RoomDatabase() {
 
-    companion object{
-
-        @Volatile
-        private var INSTANCE:TaskRoomDatabase?=null
-
-        fun getInstance(context: Context):TaskRoomDatabase{
-            synchronized(this){
-                var instance = INSTANCE
-                if(instance==null){
-                    instance = Room.databaseBuilder(
-                        context.applicationContext,
-                        TaskRoomDatabase::class.java,
-                        "task_database"
-                    ).fallbackToDestructiveMigration()
-                        .build()
-
-                    INSTANCE = instance
-                }
-
-                return instance
-            }
-        }
-    }
+    abstract fun todoDao(): TodoDao
+    abstract fun notesDao(): NotesDao
 }
