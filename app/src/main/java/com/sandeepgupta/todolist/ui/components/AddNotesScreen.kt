@@ -10,16 +10,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -28,23 +24,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sandeepgupta.todolist.viewmodels.NotesViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddNotesScreen() {
+fun AddNotesScreen(notesViewModel: NotesViewModel) {
 
-    val notesViewModel = hiltViewModel<NotesViewModel>()
-
-    var title by remember {
-        mutableStateOf("")
-    }
-
-    var body by remember {
-        mutableStateOf("")
-    }
-
-    fun saveNote() {
-        notesViewModel.addNote(title, body)
-    }
+    val title = notesViewModel.currentTitle.observeAsState(initial = "").value
+    val body = notesViewModel.currentBody.observeAsState(initial = "").value
 
     Scaffold {
         Column(
@@ -58,7 +42,7 @@ fun AddNotesScreen() {
             Spacer(modifier = Modifier.height(16.dp))
             BasicTextField(
                 value = title,
-                onValueChange = { title = it },
+                onValueChange = { notesViewModel.update(title = it) },
                 textStyle = TextStyle(
                     fontSize = MaterialTheme.typography.titleLarge.fontSize,
                     color = MaterialTheme.colorScheme.onSurface
@@ -84,7 +68,7 @@ fun AddNotesScreen() {
 
             BasicTextField(
                 value = body,
-                onValueChange = { body = it },
+                onValueChange = { notesViewModel.update(body = it) },
                 textStyle = TextStyle(
                     fontSize = MaterialTheme.typography.bodyLarge.fontSize,
                     color = MaterialTheme.colorScheme.onSurface
@@ -105,11 +89,6 @@ fun AddNotesScreen() {
                     .fillMaxSize()
                     .background(Color.Transparent)
             )
-
-            Button(onClick = { saveNote() }) {
-                Text(text = "Save")
-            }
-
         }
 
     }

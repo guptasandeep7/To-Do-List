@@ -25,6 +25,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -34,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -44,6 +46,7 @@ import com.sandeepgupta.todolist.ui.components.AddTextField
 import com.sandeepgupta.todolist.ui.components.NotesScreen
 import com.sandeepgupta.todolist.ui.components.TodoScreen
 import com.sandeepgupta.todolist.viewmodels.MainViewModel
+import com.sandeepgupta.todolist.viewmodels.NotesViewModel
 import kotlinx.coroutines.launch
 
 
@@ -52,7 +55,11 @@ import kotlinx.coroutines.launch
     ExperimentalComposeUiApi::class
 )
 @Composable
-fun MainUI(mainViewModel: MainViewModel, navController: NavHostController) {
+fun MainUI(
+    mainViewModel: MainViewModel,
+    notesViewModel: NotesViewModel,
+    navController: NavHostController
+) {
 
     val keyboardController = LocalSoftwareKeyboardController.current
     val state = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
@@ -77,18 +84,26 @@ fun MainUI(mainViewModel: MainViewModel, navController: NavHostController) {
     ) {
         Scaffold(
             topBar = {
-                TopAppBar(title = {
-                    Text(
-                        text = when (currentRoute) {
-                            Destinations.Todo.route -> "Todo List"
-                            Destinations.Notes.route -> "Notes"
-                            Destinations.AddNotesScreen.route -> "Add Notes"
-                            else -> "Todo List"
-                        }
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = when (currentRoute) {
+                                Destinations.Todo.route -> "Todo List"
+                                Destinations.Notes.route -> "Notes"
+                                Destinations.AddNotesScreen.route -> "Add Notes"
+                                else -> "Todo List"
+                            }
+                        )
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimary
                     )
-                })
+                )
+
             },
             floatingActionButton = {
+                val notesViewModel: NotesViewModel = hiltViewModel()
                 if (currentRoute != Destinations.AddNotesScreen.route)
                     FloatingActionButton(onClick = {
                         when (currentRoute) {
@@ -100,6 +115,9 @@ fun MainUI(mainViewModel: MainViewModel, navController: NavHostController) {
                             }
 
                             Destinations.Notes.route -> {
+                                notesViewModel.currentId.value = null
+                                notesViewModel.currentTitle.value = ""
+                                notesViewModel.currentBody.value = ""
                                 navController.navigate(Destinations.AddNotesScreen.route)
                             }
                         }
@@ -112,7 +130,7 @@ fun MainUI(mainViewModel: MainViewModel, navController: NavHostController) {
                 Box(
                     modifier = Modifier.padding(it)
                 ) {
-                    NavigationGraph(navController = navController, mainViewModel)
+                    NavigationGraph(navController = navController, mainViewModel, notesViewModel)
                 }
 
             }
@@ -122,7 +140,11 @@ fun MainUI(mainViewModel: MainViewModel, navController: NavHostController) {
 
 
 @Composable
-fun NavigationGraph(navController: NavHostController, mainViewModel: MainViewModel) {
+fun NavigationGraph(
+    navController: NavHostController,
+    mainViewModel: MainViewModel,
+    notesViewModel: NotesViewModel
+) {
     NavHost(navController,
         Destinations.Todo.route,
         enterTransition = { EnterTransition.None },
@@ -150,10 +172,10 @@ fun NavigationGraph(navController: NavHostController, mainViewModel: MainViewMod
                     targetOffsetX = { it }
                 )
             }) {
-            NotesScreen()
+            NotesScreen(navController, notesViewModel)
         }
         composable(Destinations.AddNotesScreen.route) {
-            AddNotesScreen()
+            AddNotesScreen(notesViewModel)
         }
     }
 

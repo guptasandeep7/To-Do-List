@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 
 const val DATABASE_NAME = "task_database"
 
-@Database(entities = [(DataItem::class), (NotesItem::class)], version = 4, exportSchema = false)
+@Database(entities = [(DataItem::class), (NotesItem::class)], version = 6, exportSchema = false)
 abstract class TaskRoomDatabase : RoomDatabase() {
 
     abstract fun todoDao(): TodoDao

@@ -10,8 +10,8 @@ class NotesRepository @Inject constructor(private val notesDao: NotesDao) {
 
     suspend fun addNote(notesItem: NotesItem) = notesDao.addNotes(notesItem)
 
-    suspend fun updateNote(id: Int, title: String, body: String) =
-        notesDao.updateNote(id, title, body)
+    suspend fun updateNote(notesItem: NotesItem) =
+        notesDao.updateNote(notesItem)
 
     suspend fun deleteNote(notesItem: NotesItem) = notesDao.deleteNote(notesItem)
 }

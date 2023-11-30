@@ -1,5 +1,6 @@
 package com.sandeepgupta.todolist.ui.components
 
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,39 +14,52 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
+import com.sandeepgupta.todolist.models.NotesItem
+import com.sandeepgupta.todolist.view.Destinations
 import com.sandeepgupta.todolist.viewmodels.NotesViewModel
 import java.util.Random
 import kotlin.random.asKotlinRandom
 
 @Composable
-fun NotesScreen() {
+fun NotesScreen(navController: NavHostController, notesViewModel: NotesViewModel) {
 
-    val notesList = hiltViewModel<NotesViewModel>().notesList.observeAsState(emptyList())
+    val notesList = notesViewModel.notesList.observeAsState(emptyList())
 
     LazyVerticalStaggeredGrid(
         columns = StaggeredGridCells.Fixed(2),
         Modifier.padding(horizontal = 8.dp)
     ) {
         items(items = notesList.value) {
-            NotesCard(title = it.title, body = it.body)
+            NotesCard(it, notesViewModel) {
+                navController.navigate(Destinations.AddNotesScreen.route + "?noteId=${it.id}")
+            }
         }
     }
 }
 
 @Composable
-fun NotesCard(title: String, body: String) {
+fun NotesCard(
+    note: NotesItem,
+    notesViewModel: NotesViewModel,
+    navigateToAddNotesScreen: () -> Unit
+) {
     Card(
         shape = RoundedCornerShape(8.dp),
         modifier = Modifier
             .padding(8.dp)
             .fillMaxSize()
             .clickable(enabled = true) {
-
+                notesViewModel.currentTitle.value = note.title
+                notesViewModel.currentBody.value = note.body
+                notesViewModel.currentId.value = note.id
+                navigateToAddNotesScreen()
             },
     ) {
         Column(
@@ -53,7 +67,7 @@ fun NotesCard(title: String, body: String) {
                 .padding(8.dp)
         ) {
             Text(
-                text = title,
+                text = note.title,
                 fontSize = MaterialTheme.typography.titleLarge.fontSize,
                 modifier = Modifier.padding(bottom = 8.dp),
                 maxLines = 1,
@@ -61,7 +75,7 @@ fun NotesCard(title: String, body: String) {
             )
 
             Text(
-                text = body,
+                text = note.body,
                 fontSize = MaterialTheme.typography.bodySmall.fontSize,
                 fontStyle = MaterialTheme.typography.bodySmall.fontStyle,
                 maxLines = 5,

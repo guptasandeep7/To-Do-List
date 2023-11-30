@@ -4,19 +4,21 @@ import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 
 
 @Dao
 interface NotesDao {
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addNotes(notesItem: NotesItem)
 
     @Query("SELECT * FROM $NOTES_TABLE_NAME")
     fun getAllNotes(): LiveData<List<NotesItem>>
 
-    @Query("UPDATE $NOTES_TABLE_NAME set title=:title AND body=:body where id=:id")
-    suspend fun updateNote(id: Int, title: String, body: String)
+    @Update
+    suspend fun updateNote(notesItem: NotesItem)
 
     @Delete
     suspend fun deleteNote(notesItem: NotesItem)

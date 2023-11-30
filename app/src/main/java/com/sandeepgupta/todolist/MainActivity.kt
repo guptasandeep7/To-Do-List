@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import com.sandeepgupta.todolist.ui.theme.ToDoListTheme
 import com.sandeepgupta.todolist.view.MainUI
 import com.sandeepgupta.todolist.viewmodels.MainViewModel
+import com.sandeepgupta.todolist.viewmodels.NotesViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -20,7 +21,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             ToDoListTheme {
                 val navController: NavHostController = rememberNavController()
-                MainUI(hiltViewModel<MainViewModel>(), navController)
+                MainUI(hiltViewModel<MainViewModel>(), hiltViewModel<NotesViewModel>(), navController)
             }
         }
     }
